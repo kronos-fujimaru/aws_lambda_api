@@ -1,8 +1,8 @@
 # AWS LambdaによるREST API
 
-### 1. AWS Lambda
+## 1. AWS Lambda
 
-#### 1.1. jarファイルの生成
+### 1.1. jarファイルの生成
 
 AWS Lambda（以下、Lambda）にアップロードするAPIをJavaで作成する。ここでは、リクエストで商品名、単価、数量を渡すと、レスポンスで税抜価格と税込価格を返すAPIを作成する。
 
@@ -78,7 +78,7 @@ public class Calculator implements RequestHandler<Request, Response> {
 
 <br>
 
-#### 1.2. Lambda関数の生成
+### 1.2. Lambda関数の生成
 
 AWS Lambdaを用いてAPIを作成する。Lambdaの画面で[関数の作成]ボタンをクリックする。
 
@@ -110,7 +110,7 @@ AWS Lambdaを用いてAPIを作成する。Lambdaの画面で[関数の作成]�
 
 <br><br>
 
-### 2. Amazon API Gateway
+## 2. Amazon API Gateway
 
 Amazon API Gateway（以下、API Gateway）をLambda関数のトリガーとして連携することで、Lambda関数をWeb API（REST API）として使用することができる。<br>Lambda関数の概要内の[トリガーを追加]ボタンをクリックする。
 
@@ -146,7 +146,7 @@ Lambda関数欄に実行対象の関数名を指定し、[保存]ボタンをク
 
 <br><br>
 
-### 3. 通信確認
+## 3. 通信確認
 
 curlコマンドやRESTクライアントツールで、API Gatewayのエンドポイントに対してリクエストを送り、レスポンスが返ってくることを確認する。
 
