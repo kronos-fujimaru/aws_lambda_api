@@ -165,7 +165,8 @@ curlコマンドやRESTクライアントツールで、API Gatewayのエンド�
 Windowsでは、次のcurlコマンドで通信確認ができる。
 
 ```
-curl -X POST [API Gatewayのエンドポイント] -H "Content-Type: application/json" -d {\"itemName\":\"Apple\",\"price\":100,\"quantity\":5}
+> curl -X POST [API Gatewayのエンドポイント] -H "Content-Type: application/json" -d {\"itemName\":\"Apple\",\"price\":100,\"quantity\":5}
+{"request":{"itemName":"Apple","price":100,"quantity":5},"taxExcluded":500,"taxIncluded":550}
 ```
 
 API Gatewayのエンドポイントは、Lambda関数のトリガータブで確認ができる。
@@ -323,5 +324,6 @@ API Gatewayで、対象リソースにGETメソッドを追加する。追加後
 次のcurlコマンドで通信確認ができる。
 
 ```
-curl -X GET "API Gatewayのエンドポイント?itemName=Apple&price=100&quantity=5"
+> curl -X GET "API Gatewayのエンドポイント?itemName=Apple&price=100&quantity=5"
+{"request":{"itemName":"Apple","price":100,"quantity":5},"taxExcluded":500,"taxIncluded":550}
 ```
