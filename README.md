@@ -6,10 +6,22 @@
 
 AWS Lambda（以下、Lambda）にアップロードするAPIをJavaで作成する。ここでは、リクエストで商品名、単価、数量を渡すと、レスポンスで税抜価格と税込価格を返すAPIを作成する。
 
-**com.lambda.data.Request.java**
+**pom.xml**
+
+```xml
+<dependencies>
+  <dependency>
+    <groupId>com.amazonaws</groupId>
+    <artifactId>aws-lambda-java-core</artifactId>
+    <version>1.2.0</version>
+  </dependency>
+</dependencies>
+```
+
+**com.lambda.dto.Request.java**
 
 ```java
-package com.lambda.data;
+package com.lambda.dto;
 
 public class Request {
   // 商品名
@@ -25,10 +37,10 @@ public class Request {
 }
 ```
 
-**com.lambda.data.Response.java**
+**com.lambda.dto.Response.java**
 
 ```java
-package com.lambda.data;
+package com.lambda.dto;
 
 public class Response {
   // リクエスト
@@ -44,15 +56,15 @@ public class Response {
 }
 ```
 
-**com.lambda.Calculator.java**
+**com.lambda.api.Calculator.java**
 
 ```java
 package com.lambda;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.lambda.data.Request;
-import com.lambda.data.Response;
+import com.lambda.dto.Request;
+import com.lambda.dto.Response;
 
 public class Calculator implements RequestHandler<Request, Response> {
   @Override
@@ -154,4 +166,162 @@ Windowsでは、次のcurlコマンドで通信確認ができる。
 
 ```
 curl -X POST [API Gatewayのエンドポイント] -H "Content-Type: application/json" -d {\"itemName\":\"Apple\",\"price\":100,\"quantity\":5}
+```
+
+API Gatewayのエンドポイントは、Lambda関数のトリガータブで確認ができる。
+
+<img src="img/03_01.jpg" width="700">
+
+<br><br>
+
+## 4. WebアプリからAPIを使用する
+
+API Gatewayで公開したLambda関数に対して、Webアプリから非同期通信でリクエストを送信する。
+
+### 4.1. CORSの有効化
+
+Webアプリ（外部サイト）からAPIを使用するためには、まずCORSを有効化する必要がある。
+
+> CORS（Cross-Origin Resource Sharing）とは、あるオリジンで動いているWebアプリに対して、異なるオリジンとの通信を可能にするセキュリティ上の仕組みである。
+
+<br>
+
+API Gatewayで、対象のリソースを選択し、アクションから[CORS の有効化]を選択する。
+
+<img src="img/04_01.jpg" width="250">
+
+[CORSを有効にして既存のCORSヘッダーを置換]ボタンをクリックし、表示される確認画面でも[はい、既存の値を置き換えます]ボタンをクリックする。
+
+<img src="img/04_02.jpg" width="700">
+
+CORSヘッダーの置き換えがされ、OPTIONSメソッドが追加されたことを確認したら、**再度APIのデプロイをする。**
+
+<br>
+
+### 4.2. Webアプリからのリクエスト送信
+
+HTMLの画面からAPIに対してデータを送って動作を確認する。データの送信には、JavaScriptの非同期通信（Axios）を使用する。
+
+**index.html**
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Lambda Calculation</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script type="text/javascript">
+  async function calc() {
+    // リクエストデータ（JSON）
+    const params = JSON.stringify({
+      itemName: $('#itemName').val(),
+      price: $('#price').val(),
+      quantity: $('#quantity').val()
+    });
+
+    // 非同期通信
+    await axios.post("API Gatewayのエンドポイント", params)
+      // 成功時の処理
+      .then((response) => {
+        // レスポンスデータをコンソールに表示する
+        console.log(response.data);
+      })
+      // エラー時の処理
+      .catch((err) => {
+        alert('計算時にエラーが発生しました。');
+        console.log("err:", err);
+      });
+  }
+  </script>
+</head>
+<body>
+  <div class="container mt-3">
+    <div class="row">
+      <header class="col-10">
+        <h2>Lambda Calculation</h2>
+      </header>
+    </div>
+    <div class="row">
+      <article class="col-10">
+        <div class="form-group">
+          <label for="itemName">商品名：</label>
+          <input type="text" class="form-control" id="itemName" name="itemName" required>
+        </div>
+        <div class="form-group">
+          <label for="price">単価：</label>
+          <input type="number" class="form-control text-right w-50" id="price" name="price" min="0" max="1000000" value="0" required>
+        </div>
+        <div class="form-group">
+          <label for="quantity">数量：</label>
+          <input type="number" class="form-control text-right w-50" id="quantity" name="quantity" min="0" max="100" value="0" required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="calc()">送信</button>
+      </article>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+<br>
+
+ローカルでindex.htmlを開き、各値を入力し、[送信]ボタンをクリックする。
+
+<img src="img/04_03.jpg" width="500">
+
+ブラウザの開発者ツール > コンソール画面を開き、レスポンスデータ（税抜価格や税込価格）が表示されることを確認する。
+
+<img src="img/04_04.jpg" width="600">
+
+<br><br>
+
+## Appendix. GETメソッドにおけるクエリパラメータの送信
+
+GETメソッドにおいてURLクエリパラメータをLambda関数に渡すためには、API Gateway側でクエリパラメータをJSONに置換して送るよう設定する必要がある。
+
+API Gatewayで、対象リソースにGETメソッドを追加する。追加後、[統合リクエスト]リンクをクリックする。
+
+<img src="img/A_01.jpg" width="700">
+
+[URLクエリ文字列パラメータ]欄にて、[クエリ文字列の追加]リンクをクリックし、キーとなる名前とマッピング元を下記のように設定する。
+
+| 名前 | マッピング元 |
+|------|-------------|
+| itemName | 'method.request.querystring.itemName' |
+| price | 'method.request.querystring.price' |
+| quantity | 'method.request.querystring.quantity' |
+
+<img src="img/A_02.jpg" width="700">
+
+<br>
+
+[マッピングテンプレート]欄にて、下記のように設定する。
+
+- リクエスト本文のパススルー
+    - テンプレートが定義されていない場合（推奨）
+- Context-type
+    - application/json
+- テンプレート
+
+```
+{
+  "itemName": "$input.params('itemName')",
+  "price": "$input.params('price')",
+  "quantity": "$input.params('quantity')"
+}
+```
+
+<img src="img/A_03.jpg" width="700">
+
+<br><br>
+
+次のcurlコマンドで通信確認ができる。
+
+```
+curl -X GET "API Gatewayのエンドポイント?itemName=Apple&price=100&quantity=5"
 ```
