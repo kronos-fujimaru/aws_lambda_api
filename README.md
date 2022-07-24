@@ -18,25 +18,6 @@ AWS Lambda（以下、Lambda）にアップロードするAPIをJavaで作成す
 </dependencies>
 ```
 
-**com.lambda.dto.Request.java**
-
-```java
-package com.lambda.dto;
-
-public class Request {
-  // 商品名
-  private String itemName;
-
-  // 単価
-  private Integer price;
-
-  // 数量
-  private Integer quantity;
-
-  // getter/setterは中略
-}
-```
-
 **com.lambda.dto.Response.java**
 
 ```java
@@ -44,15 +25,15 @@ package com.lambda.dto;
 
 public class Response {
   // リクエスト
-  private Request request;
+  private Map<String, String> request;
 
   // 税抜価格
-  private Integer taxExcluded;
+  private int taxExcluded;
 
   // 税込価格
-  private Integer taxIncluded;
+  private int taxIncluded;
 
-  // getter/setterは中略
+  // 各フィールドのgetter/setter
 }
 ```
 
@@ -66,19 +47,22 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.lambda.dto.Request;
 import com.lambda.dto.Response;
 
-public class Calculator implements RequestHandler<Request, Response> {
+public class Calculator implements RequestHandler<Map<String, String>, Response> {
   @Override
-  public Response handleRequest(Request request, Context context) {
-    // リクエスト情報を基に税抜価格と税込価格を算出する
-    Integer taxExcluded = request.getPrice() * request.getQuantity();
-    Integer taxIncluded = (int)(request.getPrice() * request.getQuantity() * 1.1);
+  public Response handleRequest(Map<String, String> request, Context context) {
+    // リクエストデータを取り出す
+    int price = Integer.parseInt(request.get("price"));
+    int quantity = Integer.parseInt(request.get("quantity"));
 
-    // レスポンス情報を作成する
+    // リクエスト情報を基に税抜価格と税込価格を算出する
+    int taxExcluded = price * quantity;
+    int taxIncluded = (int)(price * quantity * 1.1);
+
+    // レスポンスデータを用意し、返却する
     Response response = new Response();
     response.setRequest(request);
     response.setTaxExcluded(taxExcluded);
     response.setTaxIncluded(taxIncluded);
-
     return response;
   }
 }
