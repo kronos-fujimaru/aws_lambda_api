@@ -1,4 +1,4 @@
-# AWS LambdaによるREST API
+# AWS Lambdaによるサーバレス構築
 
 ## 1. AWS Lambda
 
