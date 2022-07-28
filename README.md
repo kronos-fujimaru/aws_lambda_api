@@ -16,6 +16,36 @@ AWS Lambda（以下、Lambda）にアップロードするAPIをJavaで作成す
     <version>1.2.0</version>
   </dependency>
 </dependencies>
+
+<!-- 依存関係を含めてjarファイル化するプラグイン -->
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-assembly-plugin</artifactId>
+      <version>2.4.1</version>
+      <configuration>
+        <descriptorRefs>
+          <descriptorRef>jar-with-dependencies</descriptorRef>
+        </descriptorRefs>
+        <archive>
+          <manifest>
+            <mainClass>Handler</mainClass>
+          </manifest>
+        </archive>
+      </configuration>
+      <executions>
+        <execution>
+          <id>make-assembly</id>
+          <phase>package</phase>
+          <goals>
+            <goal>single</goal>
+          </goals>
+        </execution>
+      </executions>
+    </plugin>
+  </plugins>
+</build>
 ```
 
 **com.lambda.dto.Response.java**
